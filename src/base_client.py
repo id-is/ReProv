@@ -1,6 +1,6 @@
 import requests
 from abc import ABC, abstractmethod
-from ..config import BASE_URL, API_KEY
+from config import BASE_URL, API_KEY
 
 class AbstractClient(ABC):
     def __init__(self, endpoint):
