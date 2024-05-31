@@ -1,7 +1,7 @@
 import requests
 import os 
 from abc import ABC, abstractmethod
-from utils.authentication import get_access_token
+from ..utils.authentication import get_access_token
 from dotenv import load_dotenv
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))

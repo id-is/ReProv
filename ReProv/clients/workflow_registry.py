@@ -1,5 +1,6 @@
 import requests
-from base_client import AbstractClient
+from .base_client import AbstractClient
+
 class WorkflowRegistryClient(AbstractClient):
     def __init__(self):
         super().__init__("workflow_registry")
