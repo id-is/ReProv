@@ -1,18 +1,30 @@
 import requests
+import os 
 from abc import ABC, abstractmethod
-from config import BASE_URL, API_KEY
+from utils.authentication import get_access_token
+from dotenv import load_dotenv
+
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+load_dotenv(os.path.join(parent_dir, '.env'))
 
 class AbstractClient(ABC):
     def __init__(self, endpoint):
         """
         Initialize the AbstractClient with a specific API endpoint.
         """
-        self.base_url = f"{BASE_URL}/{endpoint}"
+        self.base_url = f"{os.environ['BASE_URL']}/{endpoint}"
         self.headers = {
-            "Authorization": f"Bearer {API_KEY}",
+            "Authorization": f"Bearer {get_access_token()}",
             "Content-Type": "application/json"
         }
     
+    @abstractmethod
+    def get_all(self):
+        """
+        Abstract method to get every item by its ID.
+        """
+        pass
+
     @abstractmethod
     def get(self, item_id):
         """
@@ -72,27 +84,3 @@ class AbstractClient(ABC):
             print("Internal server error. Please try again later.")
         else:
             print(f"Unexpected error: {http_error}")
-
-# Example of a concrete implementation
-class ExampleClient(AbstractClient):
-    def get(self, item_id):
-        url = f"{self.base_url}/{item_id}"
-        return self._request("GET", url)
-
-    def create(self, item_data):
-        url = self.base_url
-        return self._request("POST", url, body=item_data)
-
-    def update(self, item_id, item_data):
-        url = f"{self.base_url}/{item_id}"
-        return self._request("PUT", url, body=item_data)
-
-    def delete(self, item_id):
-        url = f"{self.base_url}/{item_id}"
-        return self._request("DELETE", url)
-
-# Usage example
-if __name__ == "__main__":
-    client = ExampleClient("example_endpoint")
-    item = client.get("123")
-    print(item)
