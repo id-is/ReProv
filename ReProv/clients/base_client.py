@@ -14,8 +14,8 @@ class AbstractClient(ABC):
         """
         self.base_url = f"{os.environ['BASE_URL']}/{endpoint}"
         self.headers = {
-            "Authorization": f"Bearer {get_access_token()}",
-            "Content-Type": "application/json"
+            "accept": "application/json",
+            "Authorization": f"Bearer {get_access_token()}"
         }
     
     @abstractmethod
@@ -53,16 +53,24 @@ class AbstractClient(ABC):
         """
         pass
 
-    def _request(self, method, url, body=None):
+    def _request(self, method, url, params=None, files=None, body=None):
         """
-        Internal method to handle HTTP requests using the requests library.
+        Internal method to handle HTTP requests, with support for file uploads.
         """
         try:
-            response = requests.request(method, url, headers=self.headers, json=body)
+            if files:
+                # Ensure files are properly prepared for multipart/form-data request
+                response = requests.request(method, url, headers=self.headers, params=params, files=files)
+            else:
+                # Standard request for other cases
+                response = requests.request(method, url, headers=self.headers, json=body)
+
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as http_err:
-            self._handle_http_error(http_err)
+            print(f"HTTP error occurred: {http_err}")
+            if http_err.response is not None:
+                print(f"Server response: {http_err.response.text}")
             return None
         except Exception as err:
             print(f"An error occurred: {err}")
@@ -84,3 +92,24 @@ class AbstractClient(ABC):
             print("Internal server error. Please try again later.")
         else:
             print(f"Unexpected error: {http_error}")
+
+
+    def _download_file(self, url, path):
+        """
+        Internal method to handle file download.
+
+        :param url: The URL from which to download the file.
+        :param path: The path where the downloaded file will be stored
+        :return: The content of the downloaded file.
+        """
+        response = requests.get(url, headers=self.headers)
+ 
+        content_type = response.headers.get('Content-Type')
+
+        if 'application/json' in content_type:
+            data = response.json()
+            print('Error:', data)
+        else:
+            file_content = response.content
+            with open(path, 'wb') as file:
+                file.write(file_content)
